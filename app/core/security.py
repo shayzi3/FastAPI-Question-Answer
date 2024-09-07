@@ -1,8 +1,14 @@
-from typing import Any
 import bcrypt
 import jwt
 
-from app.core.config import settings
+from datetime import datetime, timedelta
+from typing import Any
+
+from fastapi import HTTPException, status
+
+from core.config import settings
+from db import crud
+from db.schemas import TokenUser
 
 
 
@@ -26,15 +32,14 @@ class JWT:
      async def get_access_token(
           cls,
           sub: Any, 
-          iat: str, 
-          exp: int, 
-          perm: str = 'user'
+          exp: int | None = None, 
+          superuser: bool = False
      ) -> str:
           data = {
                'sub': sub,
-               'iat': iat,
-               'exp':  exp,
-               'perm':  perm
+               'iat': datetime.utcnow(),
+               'exp':  datetime.utcnow() + timedelta(minutes=exp if exp else 30),
+               'perm':  superuser
           }
           token = jwt.encode(
                payload=data,
@@ -42,3 +47,33 @@ class JWT:
                algorithm=settings.alg
           )
           return token
+     
+     
+     @classmethod
+     async def decode_access_token(cls, token: str) -> TokenUser:
+          error = HTTPException(
+               status_code=status.HTTP_401_UNAUTHORIZED,
+               detail='You not authorized'
+          )
+          try:
+               payload = jwt.decode(token, settings.secret, algorithms=settings.alg)
+               
+               sub = payload.get('sub')
+               if not sub:
+                    raise error
+               
+               user = TokenUser(**payload)
+               
+          except jwt.PyJWTError:
+               raise error
+          
+          exists = await crud.crud.user_exists(id=user.sub)
+          if exists:
+               raise error
+
+          return user
+
+     
+     
+hashed = Hashed()
+Jwt = JWT()

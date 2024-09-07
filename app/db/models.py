@@ -3,9 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 from sqlalchemy import BigInteger, ForeignKey, String
 
-from .schemas import Permission
-
-
 
 class Base(AsyncAttrs, DeclarativeBase):
      pass
@@ -18,11 +15,10 @@ class User(Base):
      
      id: Mapped[int] = mapped_column(BigInteger, primary_key=True, unique=True)
      username: Mapped[str] = mapped_column(String, nullable=False, unique=True)
-     email: Mapped[str] = mapped_column(nullable=False)
      password: Mapped[str] = mapped_column(nullable=False)
-     permissions: Mapped[Permission] = mapped_column(nullable=False)
      questions: Mapped[str] = mapped_column(nullable=False)
      answers: Mapped[str] = mapped_column(nullable=False)
+     superuser: Mapped[bool] = mapped_column(nullable=False)
      
      
     
