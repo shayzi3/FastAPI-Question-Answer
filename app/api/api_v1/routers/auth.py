@@ -37,6 +37,14 @@ async def get_me(
 ) -> UserModel:
      
      return data
+
+
+@router.get('/get')
+async def get_user(
+     data: Annotated[UserModel, Depends(auth_depends.get_user_depend)]
+) -> UserModel:
+     
+     return data
      
      
      

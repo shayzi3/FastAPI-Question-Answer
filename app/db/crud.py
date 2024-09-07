@@ -15,10 +15,10 @@ class Crud(Session):
      @staticmethod
      def id_or_username(func: Callable) -> Callable:
           async def wrapper(*args, **kwagrs) -> Callable:
-               if 'id' in kwagrs.keys():
+               if 'id' in kwagrs.keys() and kwagrs.get('id'):
                     sttm = select(User).filter_by(id=kwagrs.get('id'))
 
-               elif 'username' in kwagrs.keys():
+               elif 'username' in kwagrs.keys() and kwagrs.get('username'):
                     sttm = select(User).filter_by(username=kwagrs.get('username'))
                
                kwagrs.update({'sttm': sttm})
@@ -96,7 +96,9 @@ class Crud(Session):
                result = await db.execute(kwargs.get('sttm'))
                scalar = result.scalar()               
                
-          return UserModel(**scalar.__dict__)
+          if scalar:
+               return UserModel(**scalar.__dict__)
+          return None
 
      
      

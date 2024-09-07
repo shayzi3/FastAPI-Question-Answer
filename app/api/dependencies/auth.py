@@ -1,7 +1,7 @@
 
 from typing import Any, Annotated
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 
 from db.crud import crud
 from core.security import Jwt
@@ -58,6 +58,27 @@ class AuthDepends:
           user = await crud.get_user(id=token.sub)
           
           return user
+     
+     
+     @classmethod
+     async def get_user_depend(
+          cls,
+          id: int | None = None,
+          username: str | None = None
+     ) -> UserModel:
+          error = HTTPException(
+               status_code=status.HTTP_404_NOT_FOUND,
+               detail='User not found.'
+          )
+          
+          if not id and not username:
+               raise error
+               
+          user = await crud.get_user(id=id, username=username)
+          if not user:
+               raise error
+          return user
+
 
 
      @staticmethod
