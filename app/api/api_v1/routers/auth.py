@@ -31,22 +31,12 @@ async def signup(
 
 
 
-@router.get('/me', response_model=UserModel)
+@router.get('/get', response_model=UserModel)
 async def get_me(
-     data: Annotated[UserModel, Depends(auth_depends.get_me_depend)]
-) -> UserModel:
-     
-     return data
-
-
-@router.get('/get')
-async def get_user(
      data: Annotated[UserModel, Depends(auth_depends.get_user_depend)]
 ) -> UserModel:
      
      return data
-     
-     
      
 
      

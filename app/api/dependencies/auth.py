@@ -50,39 +50,28 @@ class AuthDepends:
      
      
      @classmethod
-     async def get_me_depend(
-          cls,
-          scheme: Annotated[str, Depends(oauth_scheme)],
-     ) -> UserModel:
-          token = await Jwt.decode_access_token(scheme)
-          user = await crud.get_user(id=token.sub)
-          
-          return user
-     
-     
-     @classmethod
      async def get_user_depend(
           cls,
+          scheme: Annotated[str, Depends(oauth_scheme)],
           id: int | None = None,
           username: str | None = None
      ) -> UserModel:
-          error = HTTPException(
-               status_code=status.HTTP_404_NOT_FOUND,
-               detail='User not found.'
-          )
-          
           if not id and not username:
-               raise error
+               token = await Jwt.decode_access_token(scheme)
+               user = await crud.get_user(id=token.sub)
                
-          user = await crud.get_user(id=id, username=username)
-          if not user:
-               raise error
+          else:
+               user = await crud.get_user(id=id, username=username)
+               if not user:
+                    raise HTTPException(
+                         status_code=status.HTTP_404_NOT_FOUND,
+                         detail='User not found.'
+                    )
           return user
 
 
-
      @staticmethod
-     async def exists(username, mode: Mode) -> bool | None:
+     async def exists(username: str, mode: Mode) -> bool | None:
           exists = await crud.user_exists(username=username)
           
           if mode == Mode.LOGIN:
