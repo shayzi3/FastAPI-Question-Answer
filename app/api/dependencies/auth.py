@@ -1,12 +1,12 @@
 
 from typing import Any, Annotated
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import Depends, HTTPException, Query, status
+from fastapi import Depends, HTTPException, status
 
 from db.crud import crud
 from core.security import Jwt
 from api.api_v1.enums import Mode
-from db.schemas import Token, UserModel
+from db.schemas import Token, UserModel, ResponseModel
 from core.auth import oauth_scheme
 
 
@@ -19,7 +19,7 @@ class AuthDepends:
           cls,
           form: Annotated[OAuth2PasswordRequestForm, Depends()]
      ) -> UserModel:
-          
+
           await cls.exists(form.username, mode=Mode.LOGIN)
           
           verify = await crud.verify(
@@ -47,6 +47,22 @@ class AuthDepends:
                password=form.password
           )
           return model
+     
+     
+     @classmethod
+     async def delete_depend(
+          cls, 
+          scheme: Annotated[str, Depends(oauth_scheme)]
+     ) -> ResponseModel:
+          token = await Jwt.decode_access_token(token=scheme)
+          
+          user = await crud.get_user(id=token.sub)
+          if not user:
+               raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail='Error!'
+               )
+          return await crud.delete_user(id=token.sub)
      
      
      @classmethod

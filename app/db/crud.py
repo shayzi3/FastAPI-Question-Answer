@@ -1,16 +1,17 @@
 import json
 import random
-from typing import Callable
+from typing import Any, Callable
 
 from sqlalchemy import insert, select, update, delete
 
 from db.models import User, Question
-from db.schemas import UserModel
+from db.schemas import UserModel, ResponseModel
 from core.security import hashed
 from db.session import Session
 
 
-class Crud(Session):
+
+class CrudUser(Session):
      
      @staticmethod
      def id_or_username(func: Callable) -> Callable:
@@ -54,10 +55,7 @@ class Crud(Session):
      
      @classmethod
      @id_or_username
-     async def user_exists(
-          cls, 
-          **kwargs
-     ) -> bool:
+     async def user_exists(cls, **kwargs: Any) -> bool:
           async with cls.session() as db:
                result = await db.execute(kwargs.get('sttm'))
                if result.scalar():
@@ -68,10 +66,7 @@ class Crud(Session):
      
      @classmethod
      @id_or_username
-     async def verify(
-          cls, 
-          **kwargs
-     ) -> None | UserModel:
+     async def verify(cls, **kwargs: Any) -> None | UserModel:
           async with cls.session() as db:
                result = await db.execute(kwargs.get('sttm'))
                scalar = result.scalar()
@@ -85,13 +80,23 @@ class Crud(Session):
                return None
           
           
+     @classmethod
+     async def delete_user(cls, id: int) -> ResponseModel:
+          async with cls.session.begin() as db:
+               sttm = (
+                    delete(User).
+                    where(User.id == id)
+               )
+               await db.execute(sttm)
+               
+          return ResponseModel(code=200, detail='Deleted success!')
+               
+          
+          
           
      @classmethod
      @id_or_username
-     async def get_user(
-          cls, 
-          **kwargs
-     ) -> UserModel:
+     async def get_user(cls, **kwargs: Any) -> None | UserModel:
           async with cls.session() as db:
                result = await db.execute(kwargs.get('sttm'))
                scalar = result.scalar()               
@@ -99,8 +104,15 @@ class Crud(Session):
           if scalar:
                return UserModel(**scalar.__dict__)
           return None
+     
+     
+     
+     
+class CrudQuestion(Session):
+     ...
 
      
      
 
-crud = Crud()
+crud = CrudUser()
+crud_question = CrudQuestion()

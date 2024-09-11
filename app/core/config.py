@@ -8,7 +8,6 @@ class Settings:
      
      alg = os.environ.get('ALG')
      secret = os.environ.get('SECRET')
-     url = os.environ.get('URL')
-     
+     url = os.environ.get('URL')     
      
 settings = Settings()

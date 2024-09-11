@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from api.dependencies.auth import auth_depends
-from db.schemas import Token, UserModel
+from db.schemas import Token, UserModel, ResponseModel
 
 
 
@@ -27,6 +27,15 @@ async def signup(
 ) -> Token:
      
      return await auth_depends.get_token(sub=data.id)
+
+
+
+@router.delete('/delete', response_model=ResponseModel)
+async def delete(
+     data: Annotated[ResponseModel, Depends(auth_depends.delete_depend)]
+) -> ResponseModel:
+     
+     return data
 
 
 

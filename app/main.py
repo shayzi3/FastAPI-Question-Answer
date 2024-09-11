@@ -5,7 +5,6 @@ from fastapi import FastAPI
 from api.api_v1.routers import auth
 
 
-
 app = FastAPI()
 app.include_router(auth.router)
 
@@ -19,4 +18,5 @@ async def root():
 
 if __name__ == '__main__':
      uvicorn.run('main:app', reload=True)
+     
 

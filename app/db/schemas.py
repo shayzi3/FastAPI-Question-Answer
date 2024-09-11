@@ -1,4 +1,5 @@
 
+from enum import Enum
 from pydantic import BaseModel
      
      
@@ -26,6 +27,12 @@ class Token(BaseModel):
 class TokenUser(BaseModel):
      sub: int
      perm: bool
+     
+     
+
+class ResponseModel(BaseModel):
+     code: int 
+     detail: str
      
      
      
