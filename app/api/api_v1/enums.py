@@ -14,3 +14,10 @@ class Mode(Enum):
           status_code=status.HTTP_409_CONFLICT,
           detail='User exists.'
      )
+
+
+class CategoryEnum(Enum):
+     SPORT = 'sport'
+     GAMES = 'games'
+     PROGRAMMING = 'programming'
+     CLOTH = 'cloth'

@@ -1,11 +1,17 @@
-import json
 import random
 from typing import Any, Callable
 
 from sqlalchemy import insert, select, update, delete
+from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import User, Question
-from db.schemas import UserModel, ResponseModel
+from db.models import User, Question, Answer
+from db.schemas import (
+     UserModel, 
+     ResponseModel, 
+     QuestionSchema,
+     AnswerSchema
+)
 from core.security import hashed
 from db.session import Session
 
@@ -14,17 +20,39 @@ from db.session import Session
 class CrudUser(Session):
      
      @staticmethod
-     def id_or_username(func: Callable) -> Callable:
+     def __id_or_username(func: Callable) -> Callable:
           async def wrapper(*args, **kwagrs) -> Callable:
                if 'id' in kwagrs.keys() and kwagrs.get('id'):
                     sttm = select(User).filter_by(id=kwagrs.get('id'))
-
+                    
+                    
                elif 'username' in kwagrs.keys() and kwagrs.get('username'):
                     sttm = select(User).filter_by(username=kwagrs.get('username'))
                
                kwagrs.update({'sttm': sttm})
                return await func(__class__, **kwagrs)
           return wrapper
+     
+     
+     @staticmethod
+     async def __questions_answers_sort(data: dict) -> dict:
+          if data['user_questions']:
+               new_question: list[QuestionSchema] = []
+                    
+               for ques_ in data['user_questions']:
+                    new_question.append(QuestionSchema(**ques_.__dict__))
+
+               data['user_questions'] = new_question
+               
+          if data['user_answers']:
+               new_answers: list[AnswerSchema] = []
+               
+               for answ_ in data['user_answers']:
+                    new_answers.append(AnswerSchema(**answ_.__dict__))
+                    
+               data['user_answers'] = new_answers
+          
+          return data
 
      
      
@@ -36,11 +64,9 @@ class CrudUser(Session):
      ) -> UserModel:
           async with cls.session.begin() as db:
                model = {
-                    'id': random.randint(1000000, 1000000000000),
+                    'id': random.randint(1000000, 100000000000000000),
                     'username': username,
                     'password': await hashed.hashed_password(password),
-                    'questions': json.dumps([]),
-                    'answers': json.dumps([]),
                     'superuser': False
                }
                sttm = (
@@ -54,7 +80,7 @@ class CrudUser(Session):
           
      
      @classmethod
-     @id_or_username
+     @__id_or_username
      async def user_exists(cls, **kwargs: Any) -> bool:
           async with cls.session() as db:
                result = await db.execute(kwargs.get('sttm'))
@@ -65,7 +91,7 @@ class CrudUser(Session):
      
      
      @classmethod
-     @id_or_username
+     @__id_or_username
      async def verify(cls, **kwargs: Any) -> None | UserModel:
           async with cls.session() as db:
                result = await db.execute(kwargs.get('sttm'))
@@ -95,21 +121,64 @@ class CrudUser(Session):
           
           
      @classmethod
-     @id_or_username
+     @__id_or_username
      async def get_user(cls, **kwargs: Any) -> None | UserModel:
           async with cls.session() as db:
-               result = await db.execute(kwargs.get('sttm'))
-               scalar = result.scalar()               
+               sttm = kwargs.get('sttm').options(
+                    selectinload(User.user_questions),
+                    selectinload(User.user_answers)
+               )
+               result = await db.execute(sttm)
+               scalar = result.scalar()  
+               
+               scalar_dict = scalar.__dict__
+               data = await cls.__questions_answers_sort(data=scalar_dict)
                
           if scalar:
-               return UserModel(**scalar.__dict__)
+               return UserModel(**data)
           return None
      
      
      
      
 class CrudQuestion(Session):
-     ...
+     
+     @classmethod
+     async def __update_question_at_user(
+          cls, 
+          id: int, 
+          question: Question, 
+          session: AsyncSession
+     ) -> None:
+          sttm = (
+               select(User).
+               filter_by(id=id).
+               options(selectinload(User.user_questions))
+          )
+          response = await session.execute(sttm)
+          scalar = response.scalar()
+          scalar.user_questions.append(question)
+     
+     
+     @classmethod
+     async def question_create(cls, question: str, user_id: int, category: str) -> ResponseModel:
+          async with cls.session.begin() as db:
+               question_object = {
+                    'question_id': random.randint(10000000, 100000000000000),
+                    'question': question,
+                    'user_id': user_id,
+                    'category': category
+               }
+               ques = Question(**question_object)
+               await cls.__update_question_at_user(
+                    id=user_id,
+                    question=ques,
+                    session=db
+               )
+               db.add(ques)
+                        
+          return ResponseModel(code=201, detail='Question created success.')
+          
 
      
      

@@ -16,15 +16,11 @@ if config.config_file_name is not None:
     
     
 config.set_main_option('sqlalchemy.url', settings.url + '?async_fallback=True')
-config.set_main_option('test_sqlalchemy.url', settings.test_url + '?async_fallback=True')
-
 
 target_metadata = Base.metadata
 
 
-def run_migrations_offline() -> None:
-    # url = config.get_main_option("test_sqlalchemy.url")
-    
+def run_migrations_offline() -> None:    
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -40,7 +36,6 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
-        # prefix='test_sqlalchemy.',
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

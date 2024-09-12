@@ -38,8 +38,8 @@ class Answer(Base):
      
      answer_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, unique=True)
      answer: Mapped[str] = mapped_column(nullable=False)
-     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False, unique=True)
-     question_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('questions.question_id'), nullable=False, unique=True)
+     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
+     question_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('questions.question_id'), nullable=False)
      
      user_answer: Mapped['User'] = relationship(back_populates="user_answers")  
      question: Mapped['Question'] = relationship(back_populates='answers')   
@@ -52,7 +52,7 @@ class Question(Base):
      question_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, unique=True)
      question: Mapped[str] = mapped_column(nullable=False)
      category: Mapped[str] = mapped_column(nullable=False)
-     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False, unique=True)
+     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False)
 
      user_question: Mapped['User'] = relationship(back_populates="user_questions")
      answers: Mapped[list['Answer']] = relationship(back_populates='question')
