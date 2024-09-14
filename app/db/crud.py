@@ -17,10 +17,6 @@ from db.session import Session
 
 
 
-
-
-
-
 class CrudUser(Session):
      
      @staticmethod
@@ -175,6 +171,7 @@ class CrudQuestion(Session):
           response = await session.execute(sttm)
           scalar = response.scalar()
           scalar.user_questions.append(question)
+          
      
      
      @classmethod
@@ -231,7 +228,8 @@ class CrudQuestion(Session):
      @classmethod
      async def question_get(
           cls, 
-     question_id: int) -> QuestionSchema | None:
+          question_id: int
+     ) -> QuestionSchema | None:
           async with cls.session() as db:
                sttm = select(Question).filter_by(question_id=question_id)
                response = await db.execute(sttm)
@@ -275,7 +273,7 @@ class CrudQuestion(Session):
      async def get_questions_user(
           cls, 
           **kwargs: Any
-     ) -> None | ResponseModel | list[QuestionSchema]:
+     ) -> str | ResponseModel | list[QuestionSchema]:
           async with cls.session() as db:
                sttm = kwargs.get('sttm').options(
                     selectinload(User.user_questions)
@@ -284,10 +282,10 @@ class CrudQuestion(Session):
                scalar: User = response.scalar()
                
                if not scalar:
-                    return None
+                    return 'User not found.'
                
                if not scalar.user_questions:
-                    return ResponseModel(code=200, detail='Questions not found.')
+                    return ResponseModel(code=200, detail='Questions at user not found.')
                
                list_questions = []
                for ques in scalar.user_questions:
@@ -295,7 +293,36 @@ class CrudQuestion(Session):
           return list_questions
 
 
+
+     @classmethod
+     @id_or_username
+     async def change_category_at_question(
+          cls,
+          **kwargs: Any
+     ) -> ResponseModel | None:
+          async with cls.session.begin() as db:
+               sttm_exists = select(Question).filter_by(
+                    question_id=kwargs.get('id_question'), 
+                    user_id=kwargs.get('id')
+               )
+               response = await db.execute(sttm_exists)
+               scalar = response.scalar()
                
+               if not scalar:
+                    return None
+               
+               sttm = (
+                    update(Question)
+                    .filter_by(
+                         question_id=kwargs.get('id_question'),
+                         user_id=kwargs.get('id')
+                    ).values(category=kwargs.get('category'))
+               )
+               await db.execute(sttm)
+          return ResponseModel(code=200, detail='Success changed category.')
+               
+                            
+
                
                
      

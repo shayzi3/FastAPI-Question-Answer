@@ -46,3 +46,10 @@ async def get_questions_at_user(
      ]
 ):
      return data
+
+
+@router.patch('/change_category', response_model=ResponseModel)
+async def change_category(
+     data: Annotated[ResponseModel, Depends(forum_depend.change_category_depend)]
+):
+     return data

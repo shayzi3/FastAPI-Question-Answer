@@ -87,6 +87,7 @@ class ForumDepends:
                )
           return delete
      
+     
      @classmethod
      async def get_questions_at_user_depend(
           cls,
@@ -94,18 +95,41 @@ class ForumDepends:
           user_id: int | None = None,
           username: str | None = None
      ) -> ResponseModel | list[QuestionSchema]:
-          await Jwt.decode_access_token(token)
+          data = await Jwt.decode_access_token(token)
+          
+          if not user_id and not username:
+               user_id = data.sub
           
           get = await crud_question.get_questions_user(
                id=user_id,
                username=username
           )
-          if not get:
-               cls.error.detail = 'User not found'
+          if isinstance(get, str):
+               cls.error.detail = get
                raise cls.error
           return get
+     
+     
+     @classmethod
+     async def change_category_depend(
+          cls,
+          token: Annotated[str, Depends(oauth_scheme)],
+          id_question: int,
+          category: CategoryEnum
+     ) -> ResponseModel:
+          data = await Jwt.decode_access_token(token)
           
-          
+          get = await crud_question.change_category_at_question(
+               id_question=id_question,
+               category=category.value,
+               id=data.sub
+          )     
+          if not get:
+               raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail='You cant delete this question!'
+               )
+          return get
      
      
 forum_depend = ForumDepends()
