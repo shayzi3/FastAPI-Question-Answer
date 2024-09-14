@@ -17,18 +17,21 @@ from db.session import Session
 
 
 
+
+
+
+
 class CrudUser(Session):
      
      @staticmethod
-     def __id_or_username(func: Callable) -> Callable:
+     def id_or_username(func: Callable) -> Callable:
           async def wrapper(*args, **kwagrs) -> Callable:
                if 'id' in kwagrs.keys() and kwagrs.get('id'):
                     sttm = select(User).filter_by(id=kwagrs.get('id'))
-                    
-                    
+                         
                elif 'username' in kwagrs.keys() and kwagrs.get('username'):
                     sttm = select(User).filter_by(username=kwagrs.get('username'))
-               
+                              
                kwagrs.update({'sttm': sttm})
                return await func(__class__, **kwagrs)
           return wrapper
@@ -80,7 +83,7 @@ class CrudUser(Session):
           
      
      @classmethod
-     @__id_or_username
+     @id_or_username
      async def user_exists(cls, **kwargs: Any) -> bool:
           async with cls.session() as db:
                result = await db.execute(kwargs.get('sttm'))
@@ -91,7 +94,7 @@ class CrudUser(Session):
      
      
      @classmethod
-     @__id_or_username
+     @id_or_username
      async def verify(cls, **kwargs: Any) -> None | UserModel:
           async with cls.session() as db:
                result = await db.execute(kwargs.get('sttm'))
@@ -121,7 +124,7 @@ class CrudUser(Session):
           
           
      @classmethod
-     @__id_or_username
+     @id_or_username
      async def get_user(cls, **kwargs: Any) -> None | UserModel:
           async with cls.session() as db:
                sttm = kwargs.get('sttm').options(
@@ -143,9 +146,23 @@ class CrudUser(Session):
      
 class CrudQuestion(Session):
      
-     @classmethod
+     @staticmethod
+     def id_or_username(func: Callable) -> Callable:
+          async def wrapper(*args, **kwagrs) -> Callable:
+               print(kwagrs)
+               if 'id' in kwagrs.keys() and kwagrs.get('id'):
+                    sttm = select(User).filter_by(id=kwagrs.get('id'))
+                         
+               elif 'username' in kwagrs.keys() and kwagrs.get('username'):
+                    sttm = select(User).filter_by(username=kwagrs.get('username'))
+                              
+               kwagrs.update({'sttm': sttm})
+               return await func(__class__, **kwagrs)
+          return wrapper
+     
+     
+     @staticmethod
      async def __update_question_at_user(
-          cls, 
           id: int, 
           question: Question, 
           session: AsyncSession
@@ -161,7 +178,12 @@ class CrudQuestion(Session):
      
      
      @classmethod
-     async def question_create(cls, question: str, user_id: int, category: str) -> ResponseModel:
+     async def question_create(
+          cls, 
+          question: str, 
+          user_id: int, 
+          category: str
+     ) -> ResponseModel:
           async with cls.session.begin() as db:
                question_object = {
                     'question_id': random.randint(10000000, 100000000000000),
@@ -175,9 +197,109 @@ class CrudQuestion(Session):
                     question=ques,
                     session=db
                )
-               db.add(ques)
-                        
+               db.add(ques)          
           return ResponseModel(code=201, detail='Question created success.')
+     
+     
+     @classmethod
+     async def update_question(
+          cls, 
+          question_id: int, 
+          user_id: int, 
+          new_question: str
+     ) -> ResponseModel | None:
+          async with cls.session.begin() as db:
+               sttm_question = select(Question).filter_by(
+                    question_id=question_id,
+                    user_id=user_id
+               )
+               response = await db.execute(sttm_question)
+               scalar = response.scalar()
+               
+               if not scalar:
+                    return None
+               
+               sttm = (
+                    update(Question).
+                    filter_by(question_id=question_id, user_id=user_id).
+                    values(question=new_question)
+               )
+               await db.execute(sttm)
+          return ResponseModel(code=200, detail='Question changed success.')
+     
+     
+     @classmethod
+     async def question_get(
+          cls, 
+     question_id: int) -> QuestionSchema | None:
+          async with cls.session() as db:
+               sttm = select(Question).filter_by(question_id=question_id)
+               response = await db.execute(sttm)
+               scalar = response.scalar()
+               
+               if not scalar:
+                    return None
+          return QuestionSchema(**scalar.__dict__)
+     
+     
+     @classmethod
+     async def del_question(
+          cls, 
+          user_id: int, 
+          question_id: int
+     ) -> ResponseModel:
+          async with cls.session.begin() as db:
+               sttm_exists = select(Question).filter_by(
+                    question_id=question_id, 
+                    user_id=user_id
+               )
+               response = await db.execute(sttm_exists)
+               scalar = response.scalar()
+               
+               if not scalar:
+                    return None
+               
+               sttm = (
+                    delete(Question).
+                    filter_by(
+                         question_id=question_id, 
+                         user_id=user_id
+                    )
+               )
+               await db.execute(sttm)
+          return ResponseModel(code=200, detail='Question deleted success.')
+     
+     
+     @classmethod
+     @id_or_username
+     async def get_questions_user(
+          cls, 
+          **kwargs: Any
+     ) -> None | ResponseModel | list[QuestionSchema]:
+          async with cls.session() as db:
+               sttm = kwargs.get('sttm').options(
+                    selectinload(User.user_questions)
+               )
+               response = await db.execute(sttm)
+               scalar: User = response.scalar()
+               
+               if not scalar:
+                    return None
+               
+               if not scalar.user_questions:
+                    return ResponseModel(code=200, detail='Questions not found.')
+               
+               list_questions = []
+               for ques in scalar.user_questions:
+                    list_questions.append(QuestionSchema(**ques.__dict__))
+          return list_questions
+
+
+               
+               
+               
+     
+     
           
 
      
