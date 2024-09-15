@@ -231,12 +231,25 @@ class CrudQuestion(Session):
           question_id: int
      ) -> QuestionSchema | None:
           async with cls.session() as db:
-               sttm = select(Question).filter_by(question_id=question_id)
+               sttm = (
+                    select(Question).
+                    filter_by(question_id=question_id).
+                    options(selectinload(Question.answers))
+               )
                response = await db.execute(sttm)
                scalar = response.scalar()
                
                if not scalar:
                     return None
+               
+               data = scalar.__dict__
+               if data['answers']:
+                    new_answers: list[AnswerSchema] = []
+               
+                    for answ_ in data['answers']:
+                         new_answers.append(AnswerSchema(**answ_.__dict__))
+                    
+                    data['answers'] = new_answers
           return QuestionSchema(**scalar.__dict__)
      
      
@@ -323,7 +336,56 @@ class CrudQuestion(Session):
                
                             
 
+class CrudAnswer(Session):
+     
+     @staticmethod
+     async def __question_exists(
+          ques_id: int,
+          user_id: int,
+          session: AsyncSession
+     ) -> None | Question:
+          sttm_exists = select(Question).filter_by(
+               question_id=ques_id
+          ).options(selectinload(Question.answers))
+          
+          response = await session.execute(sttm_exists)
+          scalar = response.scalar()
+          
+          if not scalar:
+               return 'Not found question or user.'
+          
+          if scalar.user_id == user_id:
+               return 'You cant add answer to your question!'
                
+          return scalar
+     
+     
+     @classmethod
+     async def add_answer(
+          cls,
+          question_id: int,
+          answer: str,
+          user_id: int
+     ) -> ResponseModel:
+          async with cls.session.begin() as db:
+               scalar = await cls.__question_exists(ques_id=question_id, session=db, user_id=user_id)
+               if isinstance(scalar, str):
+                    return scalar
+               
+               answer_object = {
+                    'answer_id': random.randint(100000, 100000000000000),
+                    'answer': answer,
+                    'user_id': user_id,
+                    'question_id': question_id
+               }
+               ans = Answer(**answer_object)
+               scalar.answers.append(ans)
+               
+               db.add(ans)
+          return ResponseModel(code=200, detail='Answer add success.')
+               
+     
+     
                
      
      
@@ -334,3 +396,4 @@ class CrudQuestion(Session):
 
 crud = CrudUser()
 crud_question = CrudQuestion()
+crud_answer = CrudAnswer()

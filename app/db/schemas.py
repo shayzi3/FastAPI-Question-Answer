@@ -39,6 +39,7 @@ class QuestionSchema(BaseModel):
      question: str
      category: str
      user_id: int
+     answers: list | None = None
      
      
 class AnswerSchema(BaseModel):
