@@ -438,6 +438,39 @@ class CrudAnswer(Session):
           return ResponseModel(code=200, detail='Answer updated success!')
      
      
+     @classmethod
+     async def delete_answer(
+          cls,
+          answer_id: int,
+          user_id: int
+     ) -> ResponseModel | str:
+          async with cls.session.begin() as db:
+               sttm = (
+                    select(Answer).
+                    filter_by(
+                         answer_id=answer_id,
+                         user_id=user_id
+                    )
+               )
+               response = await db.execute(sttm)
+               scalar = response.scalar()
+               
+               if not scalar:
+                    return 'Invalid question or you cant delete this question.'
+               
+               sttm_delete = (
+                    delete(Answer).
+                    filter_by(
+                         answer_id=answer_id,
+                         user_id=user_id
+                    )
+               )
+               await db.execute(sttm_delete)
+          return ResponseModel(code=200, detail='Answer deleted success!')
+
+
+     
+     
           
 
      

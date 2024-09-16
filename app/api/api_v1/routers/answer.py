@@ -29,3 +29,10 @@ async def update_answer(
      data: Annotated[ResponseModel, Depends(answer_depend.update_answer_depend)]
 ):
      return data
+
+
+@router.delete('/delete/{id_answer}', response_model=ResponseModel)
+async def delete_answer(
+     data: Annotated[ResponseModel, Depends(answer_depend.delete_answer_depend)]
+):
+     return data

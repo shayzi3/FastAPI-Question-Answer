@@ -68,6 +68,26 @@ class AnswerDepend:
                     detail=update
                )
           return update
+     
+     
+     @staticmethod
+     async def delete_answer_depend(
+          token: Annotated[str, Depends(oauth_scheme)],
+          id_answer: int
+     ) -> ResponseModel:
+          data = await Jwt.decode_access_token(token)
+          
+          delete = await crud_answer.delete_answer(
+               answer_id=id_answer,
+               user_id=data.sub
+          )
+          if isinstance(delete, str):
+               raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=delete
+               )
+          return delete
+
           
           
      
