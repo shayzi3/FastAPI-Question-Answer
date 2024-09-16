@@ -386,7 +386,56 @@ class CrudAnswer(Session):
                
      
      
+     @classmethod
+     async def answer_get(
+          cls,
+          answer_id: int
+     ) -> AnswerSchema | str:
+          async with cls.session() as db:
+               sttm = (
+                    select(Answer).
+                    filter_by(
+                         answer_id=answer_id
+                    ).options(selectinload(Answer.question))
+               )
+               response = await db.execute(sttm)
+               scalar = response.scalar()
                
+               if not scalar:
+                    return 'Answer not found.'
+          return AnswerSchema(**scalar.__dict__)
+     
+     
+     @classmethod
+     async def update_answer(
+          cls,
+          answer_id: int,
+          user_id: int,
+          answer: str
+     ) -> ResponseModel | str:
+          async with cls.session.begin() as db:
+               sttm = (
+                    select(Answer).
+                    filter_by(
+                         answer_id=answer_id,
+                         user_id=user_id
+                    )
+               )
+               response = await db.execute(sttm)
+               scalar = response.scalar()
+               
+               if not scalar:
+                    return 'User or question not found.'
+               
+               sttm_update = (
+                    update(Answer).
+                    filter_by(
+                         answer_id=answer_id,
+                         user_id=user_id
+                    ).values(answer=answer)
+               )
+               await db.execute(sttm_update)
+          return ResponseModel(code=200, detail='Answer updated success!')
      
      
           

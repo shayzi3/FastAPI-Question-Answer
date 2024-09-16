@@ -4,7 +4,7 @@ from fastapi import HTTPException, status, Depends, Body
 
 from core.auth import oauth_scheme
 from core.security import Jwt
-from db.schemas import ResponseModel
+from db.schemas import ResponseModel, AnswerSchema
 from db.crud import crud_answer
 
 
@@ -31,6 +31,46 @@ class AnswerDepend:
                     detail=answer_add
                )
           return answer_add
+     
+     
+     @staticmethod
+     async def get_answer_depend(
+          token: Annotated[str, Depends(oauth_scheme)],
+          id_answer: int
+     ) -> AnswerSchema:
+          await Jwt.decode_access_token(token)
+          
+          get = await crud_answer.answer_get(answer_id=id_answer)
+          if isinstance(get, str):
+               raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=get
+               )
+          return get
+     
+     
+     @staticmethod
+     async def update_answer_depend(
+          token: Annotated[str, Depends(oauth_scheme)],
+          new_answer: Annotated[str, Body(embed=True)],
+          id_answer: int
+     ) -> ResponseModel:
+          data = await Jwt.decode_access_token(token)
+          
+          update = await crud_answer.update_answer(
+               answer_id=id_answer,
+               user_id=data.sub,
+               answer=new_answer
+          )
+          if isinstance(update, str):
+               raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=update
+               )
+          return update
+          
+          
+     
      
      
 answer_depend = AnswerDepend()

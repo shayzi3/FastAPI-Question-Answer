@@ -1,4 +1,5 @@
 
+from typing import Any
 from pydantic import BaseModel
      
      
@@ -47,5 +48,6 @@ class AnswerSchema(BaseModel):
      answer: str
      user_id: int
      question_id: int
+     ques: Any | None = None
      
      
