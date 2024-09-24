@@ -7,7 +7,7 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from core.config import settings
-from db import crud
+from db.crud import crud_auth
 from db.schemas import TokenUser
 
 
@@ -28,9 +28,8 @@ class Hashed:
 
 class JWT:
      
-     @classmethod
+     @staticmethod
      async def get_access_token(
-          cls,
           sub: Any, 
           exp: int | None = None, 
           superuser: bool = False
@@ -49,28 +48,26 @@ class JWT:
           return token
      
      
-     @classmethod
-     async def decode_access_token(cls, token: str) -> TokenUser:
+     @staticmethod
+     async def decode_access_token(token: str) -> TokenUser:
           error = HTTPException(
                status_code=status.HTTP_401_UNAUTHORIZED,
-               detail='You not authorized'
+               detail='You not authorized.'
           )
           try:
-               payload = jwt.decode(token, settings.secret, algorithms=settings.alg)
+               payload: dict = jwt.decode(token, settings.secret, algorithms=settings.alg)
                
                sub = payload.get('sub')
                if not sub:
                     raise error
                
                user = TokenUser(**payload)
-               
           except jwt.PyJWTError:
                raise error
           
-          exists = await crud.crud.user_exists(id=user.sub)
+          exists = await crud_auth.auth_crud.user_exists(id=user.sub)
           if exists:
                raise error
-
           return user
 
      

@@ -2,7 +2,7 @@
 from typing import Annotated
 from fastapi import Depends, Body, HTTPException, status
 
-from db.crud import crud_question
+from db.crud.crud_forum import crud_question
 from core.auth import oauth_scheme
 from core.security import Jwt
 from db.schemas import ResponseModel, QuestionSchema
@@ -13,10 +13,10 @@ from api.api_v1.enums import CategoryEnum
 class ForumDepends:
      error = HTTPException(
           status_code=status.HTTP_404_NOT_FOUND,
-          detail='Question not found!'
+          detail='Question not found.'
      )
      
-     
+
      @staticmethod
      async def create_question_depend(
           token: Annotated[str, Depends(oauth_scheme)],
@@ -33,9 +33,8 @@ class ForumDepends:
           return save
      
      
-     @classmethod
      async def change_question_depend(
-          cls,
+          self,
           token: Annotated[str, Depends(oauth_scheme)],
           new_question: Annotated[str, Body(embed=True)],
           id_question: int
@@ -47,14 +46,13 @@ class ForumDepends:
                user_id=data.sub,
                new_question=new_question
           )
-          if not change:
-               raise cls.error
+          if isinstance(change, str):
+               raise self.error
           return change
      
      
-     @classmethod
      async def get_question_depend(
-          cls,
+          self,
           token: Annotated[str, Depends(oauth_scheme)],
           id_question: int
      ) -> QuestionSchema:
@@ -63,14 +61,13 @@ class ForumDepends:
           get = await crud_question.question_get(
                question_id=id_question
           )
-          if not get:
-               raise cls.error
+          if isinstance(get, str):
+               raise self.error
           return get
      
      
-     @classmethod
      async def delete_question_depend(
-          cls,
+          self,
           token: Annotated[str, Depends(oauth_scheme)],
           id_question: int
      ) -> ResponseModel:
@@ -80,17 +77,13 @@ class ForumDepends:
                user_id=data.sub,
                question_id=id_question
           )
-          if not delete:
-               raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail='You cant delete this question!'
-               )
+          if isinstance(delete, str):
+               raise self.error
           return delete
      
      
-     @classmethod
      async def get_questions_at_user_depend(
-          cls,
+          self,
           token: Annotated[str, Depends(oauth_scheme)],
           user_id: int | None = None,
           username: str | None = None
@@ -105,14 +98,15 @@ class ForumDepends:
                username=username
           )
           if isinstance(get, str):
-               cls.error.detail = get
-               raise cls.error
+               raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=get
+               )
           return get
      
      
-     @classmethod
      async def change_category_depend(
-          cls,
+          self,
           token: Annotated[str, Depends(oauth_scheme)],
           id_question: int,
           category: CategoryEnum
@@ -124,10 +118,10 @@ class ForumDepends:
                category=category.value,
                id=data.sub
           )     
-          if not get:
+          if isinstance(get, str):
                raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail='You cant delete this question!'
+                    detail=get
                )
           return get
      

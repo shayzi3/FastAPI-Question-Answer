@@ -12,27 +12,34 @@ router = APIRouter(tags=['Answers'], prefix='/api/v1/answer')
 
 @router.post('/create', response_model=ResponseModel)
 async def create_answer(
-     data: Annotated[ResponseModel, Depends(answer_depend.create_answer_depend)]
+     create_data: Annotated[ResponseModel, Depends(answer_depend.create_answer_depend)]
 ):
-     return data
+     return create_data
 
 
 @router.get('/get/{id_answer}', response_model=AnswerSchema)
 async def get_answer(
-     data: Annotated[AnswerSchema, Depends(answer_depend.get_answer_depend)]
+     get_data: Annotated[AnswerSchema, Depends(answer_depend.get_answer_depend)]
 ):
-     return data
+     return get_data
 
 
 @router.patch('/update/{id_answer}', response_model=ResponseModel)
 async def update_answer(
-     data: Annotated[ResponseModel, Depends(answer_depend.update_answer_depend)]
+     update_data: Annotated[ResponseModel, Depends(answer_depend.update_answer_depend)]
 ):
-     return data
+     return update_data
 
 
 @router.delete('/delete/{id_answer}', response_model=ResponseModel)
 async def delete_answer(
-     data: Annotated[ResponseModel, Depends(answer_depend.delete_answer_depend)]
+     delete_data: Annotated[ResponseModel, Depends(answer_depend.delete_answer_depend)]
 ):
-     return data
+     return delete_data
+
+
+@router.get('/user_answers', response_model=list[AnswerSchema | None])
+async def get_user_answers(
+     get_user_data: Annotated[AnswerSchema, Depends(answer_depend.get_user_answers_depend)]
+):
+     return get_user_data

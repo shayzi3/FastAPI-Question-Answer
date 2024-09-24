@@ -5,7 +5,7 @@ from fastapi import HTTPException, status, Depends, Body
 from core.auth import oauth_scheme
 from core.security import Jwt
 from db.schemas import ResponseModel, AnswerSchema
-from db.crud import crud_answer
+from db.crud.crud_answer import crud_answer
 
 
 
@@ -87,7 +87,29 @@ class AnswerDepend:
                     detail=delete
                )
           return delete
-
+     
+     
+     @staticmethod
+     async def get_user_answers_depend(
+          token: Annotated[str, Depends(oauth_scheme)],
+          id_user: int | None = None,
+          username: str | None = None
+     ) -> list[AnswerSchema | None]:
+          await Jwt.decode_access_token(token)
+          
+          answer = await crud_answer.get_answers_user(
+               id=id_user,
+               username=username
+          )
+          if isinstance(answer, str):
+               raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=answer
+               )
+          return answer
+          
+          
+          
           
           
      

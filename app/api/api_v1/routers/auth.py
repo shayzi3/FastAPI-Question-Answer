@@ -13,39 +13,38 @@ router = APIRouter(tags=['Auth'], prefix='/api/v1/user')
 
 @router.post('/login', response_model=Token)
 async def login(
-     data: Annotated[UserModel, Depends(auth_depends.login_depend)]
+     login_data: Annotated[UserModel, Depends(auth_depends.login_depend)]
 ):
      
-     return await auth_depends.get_token(sub=data.id)
+     return await auth_depends.get_token(sub=login_data.id)
 
      
 
 
 @router.post('/signup', response_model=Token)
 async def signup(
-     data: Annotated[UserModel, Depends(auth_depends.signup_depend)]
+     signup_data: Annotated[UserModel, Depends(auth_depends.signup_depend)]
 ):
      
-     return await auth_depends.get_token(sub=data.id)
+     return await auth_depends.get_token(sub=signup_data.id)
 
 
 
 @router.delete('/delete', response_model=ResponseModel)
 async def delete(
-     data: Annotated[ResponseModel, Depends(auth_depends.delete_depend)]
+     delete_data: Annotated[ResponseModel, Depends(auth_depends.delete_depend)]
 ):
      
-     return data
+     return delete_data
 
 
 
 
 @router.get('/get', response_model=UserModel)
 async def get_me(
-     data: Annotated[UserModel, Depends(auth_depends.get_user_depend)]
+     get_data: Annotated[UserModel, Depends(auth_depends.get_user_depend)]
 ):
-     
-     return data
+     return get_data
      
 
      

@@ -1,7 +1,6 @@
 import uvicorn
 
 from fastapi import FastAPI
-
 from api.api_v1.routers import auth, forum, answer
 
 
