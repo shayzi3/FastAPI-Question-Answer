@@ -128,7 +128,6 @@ async def test_get():
      global token
      
      auth = {'Authorization': f'Bearer {token}'}
-     print(auth)
 
      response = requests.get(urls_get[0], headers=auth)
      assert response.status_code == 200
@@ -153,7 +152,6 @@ async def test_get_user_not_found():
      
      url = 'http://127.0.0.1:8000/api/v1/user/get?username=bulka'
      auth = {'Authorization': f'Bearer {token}'}
-     print(auth)
      
      response = requests.get(url, headers=auth)   
      assert response.status_code == 404  

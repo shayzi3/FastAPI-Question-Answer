@@ -65,7 +65,7 @@ class CrudUser(Session):
                     'id': random.randint(10000, 100000000),
                     'username': username,
                     'password': await hashed.hashed_password(password),
-                    'superuser': False
+                    'superuser': True
                }
                sttm = (
                     insert(User).values(**model)

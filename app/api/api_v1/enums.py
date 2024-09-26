@@ -21,3 +21,8 @@ class CategoryEnum(Enum):
      GAMES = 'games'
      PROGRAMMING = 'programming'
      CLOTH = 'cloth'
+     
+     
+class AnswerQuestion(Enum):
+     ANSWER = 'answer'
+     QUESTION = 'question'

@@ -16,7 +16,10 @@ async def login(
      login_data: Annotated[UserModel, Depends(auth_depends.login_depend)]
 ):
      
-     return await auth_depends.get_token(sub=login_data.id)
+     return await auth_depends.get_token(
+          sub=login_data.id, 
+          superuser=login_data.superuser
+     )
 
      
 
@@ -26,7 +29,10 @@ async def signup(
      signup_data: Annotated[UserModel, Depends(auth_depends.signup_depend)]
 ):
      
-     return await auth_depends.get_token(sub=signup_data.id)
+     return await auth_depends.get_token(
+          sub=signup_data.id, 
+          superuser=signup_data.superuser
+     )
 
 
 
