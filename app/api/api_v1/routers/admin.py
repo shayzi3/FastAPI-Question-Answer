@@ -19,3 +19,10 @@ async def delete_question_answer(
      delete_data: Annotated[ResponseModel, Depends(admin_depend.delete_question_answer_depend)]
 ):
      return delete_data
+
+
+@router.patch(path='/update_question_answer', response_model=ResponseModel)
+async def update_question_answer(
+     update_data: Annotated[ResponseModel, Depends(admin_depend.update_question_answer_depend)]
+):
+     return update_data

@@ -14,7 +14,7 @@ from db.schemas import ResponseModel
 class CrudAdmin(Session):
      
      @staticmethod
-     def statements(func: Callable) -> ResponseModel:
+     def statement_delete(func: Callable) -> ResponseModel:
           async def wrapper(*a, **kw) -> ResponseModel:     
                del_answers = None
                          
@@ -22,19 +22,52 @@ class CrudAdmin(Session):
                     sttm_select = select(Answer).filter_by(answer_id=kw.get('id'))
                     sttm_delete = delete(Answer).filter_by(answer_id=kw.get('id'))
                     
-               if kw.get('mode') == AnswerQuestion.QUESTION:
+               else:
                     sttm_select = select(Question).filter_by(question_id=kw.get('id'))
                     
                     del_answers = delete(Answer).filter_by(question_id=kw.get('id'))
                     sttm_delete = delete(Question).filter_by(question_id=kw.get('id'))
                     
-               kw.update({
-                    'sttm_select': sttm_select,
-                    'sttm_delete': sttm_delete,
-                    'del_answers': del_answers
-               })
+               kw.update(
+                    {
+                         'sttm_select': sttm_select,
+                         'sttm_delete': sttm_delete,
+                         'del_answers': del_answers
+                    }
+               )
                return await func(*a, **kw)
           return wrapper
+     
+     
+     @staticmethod
+     def statement_update(func: Callable) -> Callable:
+          async def wrapper(*a, **kw) -> ResponseModel:
+               mode: AnswerQuestion = kw.get('mode')
+               
+               if mode == AnswerQuestion.ANSWER:
+                    sttm_select = select(Answer).filter_by(answer_id=kw.get('id'))
+                    sttm_update = (
+                         update(Answer).
+                         filter_by(answer_id=kw.get('id')).
+                         values(answer=kw.get('text'))
+                    )
+               else:
+                    sttm_select = select(Question).filter_by(question_id=kw.get('id'))
+                    sttm_update = (
+                         update(Question).
+                         filter_by(question_id=kw.get('id')).
+                         values(question=kw.get('text'))
+                    )
+                     
+               kw.update(
+                    {
+                         'sttm_select': sttm_select,
+                         'sttm_update': sttm_update
+                    }
+               )
+               return await func(*a, **kw)
+          return wrapper
+     
      
      
      async def is_superuser(
@@ -51,23 +84,43 @@ class CrudAdmin(Session):
           return True
      
      
-     @statements
+     @statement_delete
      async def delete_answer_or_question(
           self,
           **kwargs
      ) -> ResponseModel:
           async with self.session.begin() as db:
+               mode: AnswerQuestion = kwargs.get('mode')
+               
                exists = await db.execute(kwargs.get('sttm_select'))
                scalar = exists.scalar()
                
                if not scalar:
-                    return f'{kwargs.get("mode").value} not found'
+                    return f'{mode.value} not found'
                
-               if kwargs.get('mode') == AnswerQuestion.QUESTION:
+               if mode == AnswerQuestion.QUESTION:
                     await db.execute(kwargs.get('del_answers'))
                await db.execute(kwargs.get('sttm_delete'))
                
-          return ResponseModel(code=200, detail=f'{kwargs.get("mode").value} deleted!')
+          return ResponseModel(code=200, detail=f'{mode.value} deleted.')
+     
+     
+     @statement_update
+     async def update_question_or_answer(
+          self,
+          **kwargs
+     ) -> ResponseModel:
+          async with self.session.begin() as db:
+               mode: AnswerQuestion = kwargs.get('mode')
+               
+               exists = await db.execute(kwargs.get('sttm_select'))
+               scalar = exists.scalar()
+               
+               if not scalar:
+                    return f'{mode.value} not found'
+               
+               await db.execute(kwargs.get('sttm_update'))
+          return ResponseModel(code=200, detail=f'{mode.value} updated success')
 
                
 
