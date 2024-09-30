@@ -1,13 +1,11 @@
 
 
 from typing import Annotated
-from fastapi import Body, Depends, HTTPException, status
+from fastapi import Body, HTTPException, status
 
 from db.crud.crud_admin import admin_crud
 from api.api_v1.enums import AnswerQuestion
 from db.schemas import ResponseModel
-from core.auth import oauth_scheme
-from core.security import Jwt
 
 
 
@@ -15,12 +13,9 @@ class AdminDepend:
      
      async def delete_question_answer_depend(
           self,
-          token: Annotated[str, Depends(oauth_scheme)],
           id: int,
           mode: AnswerQuestion
-     ) -> ResponseModel:
-          await Jwt.decode_access_token(token)
-          
+     ) -> ResponseModel:          
           result = await admin_crud.delete_answer_or_question(
                id=id,
                mode=mode
@@ -35,12 +30,10 @@ class AdminDepend:
      
      async def update_question_answer_depend(
           self,
-          token: Annotated[str, Depends(oauth_scheme)],
           id: int,
           text: Annotated[str, Body(embed=True)],
           mode: AnswerQuestion
      ) -> ResponseModel:
-          await Jwt.decode_access_token(token)
           
           update = await admin_crud.update_question_or_answer(
                id=id,
@@ -53,7 +46,24 @@ class AdminDepend:
                     detail=update
                )
           return update
+     
+     
+     async def delete_user_depend(
+          self,
+          id: int | None = None,
+          username: str | None = None
+     ) -> ResponseModel:
           
+          delete = await admin_crud.user_delete(
+               id=id,
+               username=username
+          )
+          if isinstance(delete, str):
+               raise HTTPException(
+                    status_code=404,
+                    detail=delete
+               )
+          return delete
           
           
 

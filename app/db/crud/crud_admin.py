@@ -15,24 +15,24 @@ class CrudAdmin(Session):
      
      @staticmethod
      def statement_delete(func: Callable) -> ResponseModel:
-          async def wrapper(*a, **kw) -> ResponseModel:     
-               del_answers = None
+          async def wrapper(*a, **kw) -> ResponseModel:    
+               mode: AnswerQuestion = kw.get('mode') 
+               class_ = None
                          
-               if kw.get('mode') == AnswerQuestion.ANSWER:
-                    sttm_select = select(Answer).filter_by(answer_id=kw.get('id'))
-                    sttm_delete = delete(Answer).filter_by(answer_id=kw.get('id'))
-                    
+               if mode == AnswerQuestion.ANSWER:
+                    class_ = Answer
+                    req = {'answer_id': kw.get('id')}
+                                        
                else:
-                    sttm_select = select(Question).filter_by(question_id=kw.get('id'))
-                    
-                    del_answers = delete(Answer).filter_by(question_id=kw.get('id'))
-                    sttm_delete = delete(Question).filter_by(question_id=kw.get('id'))
-                    
+                    class_ = Question
+                    req = {'question_id': kw.get('id')}
+
+                                        
                kw.update(
                     {
-                         'sttm_select': sttm_select,
-                         'sttm_delete': sttm_delete,
-                         'del_answers': del_answers
+                         'sttm_select': select(class_).filter_by(**req),
+                         'sttm_delete': delete(class_).filter_by(**req),
+                         'del_answers': delete(Answer).filter_by(**req) if mode == AnswerQuestion.QUESTION else None
                     }
                )
                return await func(*a, **kw)
@@ -40,29 +40,48 @@ class CrudAdmin(Session):
      
      
      @staticmethod
-     def statement_update(func: Callable) -> Callable:
+     def statement_update(func: Callable) -> ResponseModel:
           async def wrapper(*a, **kw) -> ResponseModel:
                mode: AnswerQuestion = kw.get('mode')
+               class_ = None
                
                if mode == AnswerQuestion.ANSWER:
-                    sttm_select = select(Answer).filter_by(answer_id=kw.get('id'))
-                    sttm_update = (
-                         update(Answer).
-                         filter_by(answer_id=kw.get('id')).
-                         values(answer=kw.get('text'))
-                    )
+                    class_ = Answer
+                    
+                    req = {'answer_id': kw.get('id')}
+                    req_value = {'answer': kw.get('text')}
+               
                else:
-                    sttm_select = select(Question).filter_by(question_id=kw.get('id'))
-                    sttm_update = (
-                         update(Question).
-                         filter_by(question_id=kw.get('id')).
-                         values(question=kw.get('text'))
-                    )
-                     
+                    class_ = Question
+                    
+                    req = {'question_id': kw.get('id')}
+                    req_value = {'question': kw.get('text')}
+                    
+                    
                kw.update(
                     {
-                         'sttm_select': sttm_select,
-                         'sttm_update': sttm_update
+                         'sttm_select': select(class_).filter_by(**req),
+                         'sttm_update': update(class_).filter_by(**req).values(**req_value)
+                    }
+               )
+               return await func(*a, **kw)
+          return wrapper
+     
+     
+     @staticmethod
+     def statement_delete(func: Callable) -> ResponseModel | str:
+          async def wrapper(*a, **kw) -> ResponseModel | str:
+               if 'id' in kw.keys() and kw.get('id'):
+                    req = {'id': kw.get('id')}
+               
+               elif 'username' in kw.keys() and kw.get('username'):
+                    req = {'username': kw.get('username')}
+                    
+                    
+               kw.update(
+                    {
+                         'sttm_select': select(User).filter_by(**req),
+                         'sttm_delete': delete(User).filter_by(**req)
                     }
                )
                return await func(*a, **kw)
@@ -121,10 +140,21 @@ class CrudAdmin(Session):
                
                await db.execute(kwargs.get('sttm_update'))
           return ResponseModel(code=200, detail=f'{mode.value} updated success')
-
+     
+     
+     @statement_delete
+     async def user_delete(
+          self,
+          **kwargs
+     ) -> ResponseModel:
+          async with self.session.begin() as db:
+               exists = await db.execute(kwargs.get('sttm_select'))
+               scalar = exists.scalar()
                
-
-     
-     
+               if not scalar:
+                    return 'user not found'
+               
+               await db.execute(kwargs.get('sttm_delete'))
+          return ResponseModel(code=200,  detail='user deleted')
      
 admin_crud = CrudAdmin()

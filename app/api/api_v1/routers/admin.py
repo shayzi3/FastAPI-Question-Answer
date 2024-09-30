@@ -26,3 +26,10 @@ async def update_question_answer(
      update_data: Annotated[ResponseModel, Depends(admin_depend.update_question_answer_depend)]
 ):
      return update_data
+
+
+@router.delete(path='/delete_user', response_model=ResponseModel)
+async def delete_user(
+     delete_data: Annotated[ResponseModel, Depends(admin_depend.delete_user_depend)]
+):
+     return delete_data

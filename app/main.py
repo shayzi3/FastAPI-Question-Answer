@@ -5,6 +5,7 @@ from api.api_v1.routers import auth, forum, answer, admin
 
 
 app = FastAPI()
+
 app.include_router(auth.router)
 app.include_router(forum.router)
 app.include_router(answer.router)
