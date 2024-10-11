@@ -63,8 +63,7 @@ async def test_login_user_not_exist():
 @pytest.mark.anyio
 async def test_signup():
      #  200 Response
-     global names
-     global names_auth
+     global names, names_auth
      
      fake = Faker()
      user = fake.user_name()
@@ -98,8 +97,7 @@ async def test_signup_user_exist():
 @pytest.mark.anyio
 async def test_delete():
      # 200 Response
-     global names
-     global names_auth
+     global names, names_auth
      
      url = 'http://127.0.0.1:8000/api/v1/user/delete'
      
@@ -124,8 +122,7 @@ async def test_delete_token_not_valid():
 @pytest.mark.anyio
 async def test_get():
      # 200 Response
-     global urls_get
-     global token
+     global urls_get, token
      
      auth = {'Authorization': f'Bearer {token}'}
 

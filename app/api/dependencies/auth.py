@@ -4,14 +4,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, HTTPException, status
 
 from db.crud.crud_auth import auth_crud
-from core.security import Jwt
-from api.api_v1.enums import Mode
 from db.schemas import Token, UserModel, ResponseModel
+from api.api_v1.enums import Mode
 from core.auth import oauth_scheme
+from core.security import Jwt
 
 
 
-
+ 
 class AuthDepends:
      
      

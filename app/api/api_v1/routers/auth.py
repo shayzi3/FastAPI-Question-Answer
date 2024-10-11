@@ -7,11 +7,11 @@ from db.schemas import Token, UserModel, ResponseModel
 
 
 
-router = APIRouter(tags=['Auth'], prefix='/api/v1/user')
+router_auth = APIRouter(tags=['Auth'], prefix='/api/v1/user')
 
 
 
-@router.post('/login', response_model=Token)
+@router_auth.post('/login', response_model=Token)
 async def login(
      login_data: Annotated[UserModel, Depends(auth_depends.login_depend)]
 ):
@@ -24,7 +24,7 @@ async def login(
      
 
 
-@router.post('/signup', response_model=Token)
+@router_auth.post('/signup', response_model=Token)
 async def signup(
      signup_data: Annotated[UserModel, Depends(auth_depends.signup_depend)]
 ):
@@ -36,7 +36,7 @@ async def signup(
 
 
 
-@router.delete('/delete', response_model=ResponseModel)
+@router_auth.delete('/delete', response_model=ResponseModel)
 async def delete(
      delete_data: Annotated[ResponseModel, Depends(auth_depends.delete_depend)]
 ):
@@ -46,7 +46,7 @@ async def delete(
 
 
 
-@router.get('/get', response_model=UserModel)
+@router_auth.get('/get', response_model=UserModel)
 async def get_me(
      get_data: Annotated[UserModel, Depends(auth_depends.get_user_depend)]
 ):

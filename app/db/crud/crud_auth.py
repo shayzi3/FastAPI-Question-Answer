@@ -5,15 +5,15 @@ from sqlalchemy import select, delete, insert
 from sqlalchemy.orm import selectinload
 
 
-from db.models import User
-from db.session import Session
 from db.schemas import (
      ResponseModel,
      QuestionSchema,
      AnswerSchema,
      UserModel
 )
-from core.security import hashed
+from db.models import User
+from db.session import Session
+from core import security
 
 
 
@@ -64,8 +64,8 @@ class CrudUser(Session):
                model = {
                     'id': random.randint(10000, 100000000),
                     'username': username,
-                    'password': await hashed.hashed_password(password),
-                    'superuser': True
+                    'password': await security.hashed.hashed_password(password),
+                    'superuser': False
                }
                sttm = (
                     insert(User).values(**model)
@@ -92,7 +92,7 @@ class CrudUser(Session):
                result = await db.execute(kwargs.get('sttm'))
                scalar = result.scalar()
                
-               verify = await hashed.verify_hashed_passowrd(
+               verify = await security.hashed.verify_hashed_passowrd(
                     password=kwargs.get('password'),
                     hashed_password=scalar.password
                )

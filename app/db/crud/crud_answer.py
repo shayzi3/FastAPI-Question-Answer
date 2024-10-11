@@ -5,13 +5,16 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import Question, Answer, User
+from db.models import (
+     Question,
+     Answer,
+     User
+)
 from db.schemas import (
-     ResponseModel, 
+     ResponseModel,
      AnswerSchema
 )
 from db.session import Session
-
 
 
 class CrudAnswer(Session):
@@ -178,8 +181,4 @@ class CrudAnswer(Session):
           return list_answers
                
                  
-     
-     
-     
-
-crud_answer = CrudAnswer()
+answer_crud = CrudAnswer()

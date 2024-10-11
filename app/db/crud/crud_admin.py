@@ -3,12 +3,16 @@ from typing import Annotated, Callable
 from fastapi import HTTPException, status, Depends
 from sqlalchemy import select, update, delete
 
-from db.models import User, Question, Answer
+from db.models import (
+     User, 
+     Question, 
+     Answer
+)
 from db.session import Session
+from db.schemas import ResponseModel
 from core.auth import oauth_scheme
 from core.security import Jwt
 from api.api_v1.enums import AnswerQuestion
-from db.schemas import ResponseModel
 
 
 class CrudAdmin(Session):

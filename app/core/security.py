@@ -7,7 +7,7 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from core.config import settings
-from db.crud import crud_auth
+from db.crud.crud_auth import auth_crud
 from db.schemas import TokenUser
 
 
@@ -65,7 +65,7 @@ class JWT:
           except jwt.PyJWTError:
                raise error
           
-          exists = await crud_auth.auth_crud.user_exists(id=user.sub)
+          exists = await auth_crud.user_exists(id=user.sub)
           if exists:
                raise error
           return user

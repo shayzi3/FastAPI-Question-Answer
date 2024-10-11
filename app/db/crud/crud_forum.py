@@ -6,13 +6,13 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import  AsyncSession
 
 
-from db.models import Question, User
-from db.session import Session
 from db.schemas import (
      ResponseModel,
      QuestionSchema,
-     AnswerSchema,
+     AnswerSchema
 )
+from db.models import User, Question
+from db.session import Session
 
 
 

@@ -1,0 +1,6 @@
+__pycache__
+app/alembic/versions
+
+app/core/.env
+app/.py
+test.py

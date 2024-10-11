@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Depends, Body, HTTPException, status
 
 from db.crud.crud_forum import crud_question
+from db.schemas import ResponseModel, QuestionSchema
 from core.auth import oauth_scheme
 from core.security import Jwt
-from db.schemas import ResponseModel, QuestionSchema
 from api.api_v1.enums import CategoryEnum
 
 

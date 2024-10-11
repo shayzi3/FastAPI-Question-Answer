@@ -2,10 +2,10 @@
 from typing import Annotated
 from fastapi import HTTPException, status, Depends, Body
 
-from core.auth import oauth_scheme
 from core.security import Jwt
+from core.auth import oauth_scheme
 from db.schemas import ResponseModel, AnswerSchema
-from db.crud.crud_answer import crud_answer
+from db.crud.crud_answer import answer_crud
 
 
 
@@ -20,7 +20,7 @@ class AnswerDepend:
      ) -> ResponseModel:
           data = await Jwt.decode_access_token(token)
           
-          answer_add = await crud_answer.add_answer(
+          answer_add = await answer_crud.add_answer(
                question_id=id_question,
                answer=answer_text,
                user_id=data.sub
@@ -40,7 +40,7 @@ class AnswerDepend:
      ) -> AnswerSchema:
           await Jwt.decode_access_token(token)
           
-          get = await crud_answer.answer_get(answer_id=id_answer)
+          get = await answer_crud.answer_get(answer_id=id_answer)
           if isinstance(get, str):
                raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -57,7 +57,7 @@ class AnswerDepend:
      ) -> ResponseModel:
           data = await Jwt.decode_access_token(token)
           
-          update = await crud_answer.update_answer(
+          update = await answer_crud.update_answer(
                answer_id=id_answer,
                user_id=data.sub,
                answer=new_answer
@@ -77,7 +77,7 @@ class AnswerDepend:
      ) -> ResponseModel:
           data = await Jwt.decode_access_token(token)
           
-          delete = await crud_answer.delete_answer(
+          delete = await answer_crud.delete_answer(
                answer_id=id_answer,
                user_id=data.sub
           )
@@ -97,7 +97,7 @@ class AnswerDepend:
      ) -> list[AnswerSchema | None]:
           await Jwt.decode_access_token(token)
           
-          answer = await crud_answer.get_answers_user(
+          answer = await answer_crud.get_answers_user(
                id=id_user,
                username=username
           )
