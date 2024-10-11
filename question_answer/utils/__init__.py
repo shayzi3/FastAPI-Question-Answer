@@ -1,11 +1,8 @@
 
 from .request_build import Request
-from .returns import return_auth, NoneType
-from .methods import *
-
+from .valide import validate_arguments
 
 __all__ = [
      "Request",
-     "return_auth",
-     "NoneType"
+     "validate_arguments"
 ]

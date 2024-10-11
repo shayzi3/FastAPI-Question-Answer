@@ -4,7 +4,8 @@ from typing import Callable
 from types import UnionType
 
      
-def valide(func: Callable):
+     
+def validate_arguments(func: Callable):
      def wrapper(*args, **kwargs):
           annotation = func.__annotations__
           
