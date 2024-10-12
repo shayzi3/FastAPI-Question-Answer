@@ -1,19 +1,33 @@
 
-
-from pydantic import BaseModel
-
+from dataclasses import dataclass
 
 
-class Token(BaseModel):
+
+@dataclass
+class Token:
      access_token: str
      token_type: str
      
      
-class Error(BaseModel):
+     
+@dataclass
+class Error:
      status_code: int
      detail: str
      
      
-class ServerResponse(BaseModel):
+     
+@dataclass
+class ServerResponse:
      status_code: int
      detail: str
+     
+     
+     
+@dataclass
+class ReadUser:
+     id: int
+     username: str
+     superuser: bool
+     user_questions: list
+     user_answers: list

@@ -5,11 +5,9 @@ from question_answer.types import (
      Token,
      Error,
      ServerResponse,
-     RequestMethods
+     RequestMethods,
+     ReadUser
 )
-from question_answer.utils import returns
-
-
 
 
 class Request:
@@ -28,20 +26,7 @@ class Request:
           id: str | None = None,
           username: str | None = None,
           password: str | None = None
-     ) -> returns.return_auth:
-          """Requests for auth
-
-          Args:
-              mode_url (ModeUrl): part of url for self.__base_url
-              req_method (RequestMethods): POST, GET, DELETE
-              token (str | None, optional): for delete and get_user. Defaults to None.
-              id (str | None, optional): for search user. Defaults to None.
-              username (str | None, optional): for login or signup and for search user. Defaults to None.
-              password (str | None, optional): for login and signup. Defaults to None.
-
-          Returns:
-              returns.return_auth: Token, Error, ServerResponse
-          """
+     ) -> Token | Error | ServerResponse | ReadUser:
           
           headers = {'Authorization': f'Bearer {token}'} if token else None   
           data = {
@@ -71,10 +56,11 @@ class Request:
                return Token(**response.json())
           
           elif mode_url == ModeUrl.DELETE:
-               return ServerResponse(
-                    status_code=response.status_code,
-                    detail=response.json()['detail']
-               )
+               return ServerResponse(**response.json())
+               
+          elif mode_url == ModeUrl.GET_USER:
+               return ReadUser(**response.json())
+
      
 
           

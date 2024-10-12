@@ -6,7 +6,7 @@ from types import UnionType
      
      
 def validate_arguments(func: Callable):
-     def wrapper(*args, **kwargs):
+     def wrapper(self, *args, **kwargs):
           annotation = func.__annotations__
           
           # Если return останется, то выкинет ошибку
@@ -15,16 +15,17 @@ def validate_arguments(func: Callable):
           
           # Если нет аннотаций, то валидировать нечего
           if not annotation:
-               return func(*args, **kwargs)
+               return func(self, *args, **kwargs)
           
           # Собираю все аргументы из главной функции. В данном случаее у функции f
           dict_func = {}
           func_data = inspect.signature(func)
           for key in func_data.parameters:
-               dict_func[key] = {
-                    'an': func_data.parameters[key].annotation,
-                    'value': func_data.parameters[key].default
-               }
+               if key not in ['self', 'cls']:
+                    dict_func[key] = {
+                         'an': func_data.parameters[key].annotation,
+                         'value': func_data.parameters[key].default
+                    }
           
           # Проверяю все args и переношу их в словарь kwargs чтобы провалидировать в конце
           if args:
@@ -85,7 +86,7 @@ def validate_arguments(func: Callable):
                               raise TypeError(f"Missed argument {df}")
                                    
                          else: kwargs[key] = None  # В аннтации есть None
-          return func(**kwargs)
+          return func(self, **kwargs)
      return wrapper
           
           
