@@ -24,6 +24,3 @@ class Answer(AbstractCrud, Request):
      
      def delete(self):
           return None
-     
-     
-a = Answer(token='a')

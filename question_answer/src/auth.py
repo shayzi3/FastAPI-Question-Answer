@@ -29,7 +29,7 @@ class Auth(Request):
           self,
           username: str,
           password: str
-     ) -> Token | Error | ServerResponse:
+     ) -> Token | Error:
      
           response = self._request_auth(
                mode_url=ModeUrl.LOGIN,
@@ -39,7 +39,9 @@ class Auth(Request):
           )
           if 'access_token' in response.__dict__.keys():
                self._token = response.access_token
-          return response
+          if isinstance(response, Error):
+               return response
+          return Token(**response)
           
           
      @validate_arguments
@@ -47,7 +49,7 @@ class Auth(Request):
           self,
           username: str,
           password: str
-     ) -> Token | Error | ServerResponse:
+     ) -> Token | Error:
           
           response = self._request_auth(
                mode_url=ModeUrl.SIGNUP,
@@ -57,7 +59,9 @@ class Auth(Request):
           )
           if 'access_token' in response.__dict__.keys():
                self._token = response.access_token
-          return response
+          if isinstance(response, Error):
+               return response
+          return Token(**response)
           
      
      @validate_arguments
@@ -65,12 +69,17 @@ class Auth(Request):
           self,
           token: str | None = None
      ) -> ServerResponse | Error:
+          if not self._token:
+               raise ValueError("Required argument token")
           
-          return self._request_auth(
+          response = self._request_auth(
                mode_url=ModeUrl.DELETE,
                req_method=RequestMethods.DELETE,
                token=self._token if not token else token
           )
+          if isinstance(response, Error):
+               return response
+          return ServerResponse(**response)
          
           
      @validate_arguments
@@ -83,10 +92,13 @@ class Auth(Request):
           if not self._token:
                raise ValueError("Required argument token")
           
-          return self._request_auth(
+          response = self._request_auth(
                mode_url=ModeUrl.GET_USER,
                req_method=RequestMethods.GET,
                id=id,
                username=username,
                token=self._token if not token else token
           )
+          if isinstance(response, Error):
+               return response
+          return ReadUser(**response)

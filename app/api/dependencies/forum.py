@@ -36,7 +36,7 @@ class ForumDepends:
      async def change_question_depend(
           self,
           token: Annotated[str, Depends(oauth_scheme)],
-          new_question: Annotated[str, Body(embed=True)],
+          question: Annotated[str, Body(embed=True)],
           id_question: int
      ) ->  ResponseModel:
           data = await Jwt.decode_access_token(token)
@@ -44,7 +44,7 @@ class ForumDepends:
           change = await crud_question.update_question(
                question_id=id_question,
                user_id=data.sub,
-               new_question=new_question
+               new_question=question
           )
           if isinstance(change, str):
                raise self.error
@@ -85,16 +85,16 @@ class ForumDepends:
      async def get_questions_at_user_depend(
           self,
           token: Annotated[str, Depends(oauth_scheme)],
-          user_id: int | None = None,
+          id: int | None = None,
           username: str | None = None
      ) -> ResponseModel | list[QuestionSchema]:
           data = await Jwt.decode_access_token(token)
           
-          if not user_id and not username:
-               user_id = data.sub
+          if not id and not username:
+               id = data.sub
           
           get = await crud_question.get_questions_user(
-               id=user_id,
+               id=id,
                username=username
           )
           if isinstance(get, str):

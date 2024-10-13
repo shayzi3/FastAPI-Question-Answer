@@ -2,7 +2,8 @@
 from .enums import (
      ModeUrl, 
      ModeArguments, 
-     RequestMethods
+     RequestMethods,
+     Category
 )
 from .models import (
      Token, 
@@ -19,5 +20,6 @@ __all__ = [
      "Error",
      "ServerResponse",
      "RequestMethods",
-     "ReadUser"
+     "ReadUser",
+     "Category"
 ]

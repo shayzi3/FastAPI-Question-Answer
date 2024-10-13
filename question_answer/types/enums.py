@@ -17,6 +17,14 @@ class ModeUrl(Enum):
      DELETE = '/user/delete'
      GET_USER = '/user/get'
      
+     # Question
+     CREATE_QUESTION = '/forum/question/create'
+     READ_QUESTION = '/forum/question/get'
+     UPDATE_QUESTION = '/forum/question/update'
+     DELETE_QUESTION = '/forum/question/delete'
+     GET_QUESTION_USER = '/forum/question/user_questions'
+     CHANGE_CATEGORY = '/forum/question/change_category'
+     
      
 class RequestMethods(Enum):
      GET: Response = get
@@ -27,5 +35,14 @@ class RequestMethods(Enum):
      
      
 class ModeArguments(Enum):
-     GET_USER_BY_ID = '?id='
-     GET_USER_BY_NAME = '?username='
+     GET_BY_ID = '?id='
+     GET_BY_NAME = '?username='
+     CATEGORY = '?category='
+     
+     
+     
+class Category(Enum):
+     SPORT = 'sport'
+     GAMES = 'games'
+     PROGRAMMING = 'programming'
+     CLOTH = 'cloth'

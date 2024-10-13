@@ -6,7 +6,8 @@ from question_answer.types import (
      Error,
      ServerResponse,
      RequestMethods,
-     ReadUser
+     ReadUser,
+     Category
 )
 
 
@@ -26,9 +27,9 @@ class Request:
           id: str | None = None,
           username: str | None = None,
           password: str | None = None
-     ) -> Token | Error | ServerResponse | ReadUser:
+     ) -> dict | Error:
           
-          headers = {'Authorization': f'Bearer {token}'} if token else None   
+          headers = {'Authorization': f'Bearer {token}'} if token else None
           data = {
                'username': username,
                'password': password
@@ -36,11 +37,12 @@ class Request:
           
           
           url = self.__base_url + mode_url.value
-          if id:
-               url = self.__base_url + mode_url.value + ModeArguments.GET_USER_BY_ID.value + id
-               
-          elif username:
-               url = self.__base_url + mode_url.value + ModeArguments.GET_USER_BY_NAME.value + username
+          if mode_url == ModeUrl.GET_USER:
+               if id:
+                    url = self.__base_url + mode_url.value + ModeArguments.GET_BY_ID.value + id
+                    
+               elif username:
+                    url = self.__base_url + mode_url.value + ModeArguments.GET_BY_NAME.value + username
                     
           response = req_method(
                url=url,
@@ -52,14 +54,65 @@ class Request:
                     status_code=response.status_code, 
                     detail=response.json()['detail']
                )
-          if mode_url == ModeUrl.LOGIN or mode_url == ModeUrl.SIGNUP:
-               return Token(**response.json())
+          return response.json()
           
-          elif mode_url == ModeUrl.DELETE:
-               return ServerResponse(**response.json())
+          
+     def _request_question(
+          self,
+          mode_url: ModeUrl,
+          req_method: RequestMethods,
+          token: str,
+          category: Category | None = None,
+          question: str | None = None,
+          id_question: str | None = None,
+          user_id: str | None = None,
+          username: str | None = None
+     ) -> dict | Error:
+          
+          headers = {'Authorization': f'Bearer {token}'}
+          question_json = {'question':  question} if question else None
+
+          if isinstance(category, Category):
+               category = category.value
+          
+          url =  self.__base_url + mode_url.value
+          if mode_url in [ModeUrl.READ_QUESTION, ModeUrl.DELETE_QUESTION, ModeUrl.UPDATE_QUESTION]:
+               url += '/' + id_question
+                    
+          elif mode_url == ModeUrl.CREATE_QUESTION:
+               url += ModeArguments.CATEGORY.value + category
                
-          elif mode_url == ModeUrl.GET_USER:
-               return ReadUser(**response.json())
+          elif mode_url == ModeUrl.GET_QUESTION_USER:
+               if user_id:
+                    url += ModeArguments.GET_BY_ID.value + user_id
+                    
+               elif username:
+                    url += ModeArguments.GET_BY_NAME.value + username
+               
+          elif mode_url == ModeUrl.CHANGE_CATEGORY:
+               url += ModeArguments.CATEGORY.value + category + '?id_question=' + id_question
+               
+          response = req_method(
+               url=url,
+               json=question_json,
+               headers=headers
+          )
+          if response.status_code != 200:
+               return Error(
+                    status_code=response.status_code, 
+                    detail=response.json()['detail']
+               )
+          return response.json()
+
+               
+               
+               
+               
+          
+               
+          
+
+
 
      
 
