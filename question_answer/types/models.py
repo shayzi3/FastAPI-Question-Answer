@@ -31,3 +31,12 @@ class ReadUser:
      superuser: bool
      user_questions: list
      user_answers: list
+     
+
+@dataclass
+class ReadQuestion:
+     question_id: int
+     question: str
+     category: str
+     user_id: int
+     answers: list

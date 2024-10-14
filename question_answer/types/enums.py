@@ -37,7 +37,7 @@ class RequestMethods(Enum):
 class ModeArguments(Enum):
      GET_BY_ID = '?id='
      GET_BY_NAME = '?username='
-     CATEGORY = '?category='
+     CATEGORY = 'category='
      
      
      

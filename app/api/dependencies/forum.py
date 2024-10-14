@@ -87,7 +87,7 @@ class ForumDepends:
           token: Annotated[str, Depends(oauth_scheme)],
           id: int | None = None,
           username: str | None = None
-     ) -> ResponseModel | list[QuestionSchema]:
+     ) -> list[QuestionSchema]:
           data = await Jwt.decode_access_token(token)
           
           if not id and not username:

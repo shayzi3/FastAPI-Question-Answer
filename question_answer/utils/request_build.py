@@ -67,7 +67,7 @@ class Request:
           id_question: str | None = None,
           user_id: str | None = None,
           username: str | None = None
-     ) -> dict | Error:
+     ) -> list[dict] | dict | Error:
           
           headers = {'Authorization': f'Bearer {token}'}
           question_json = {'question':  question} if question else None
@@ -79,8 +79,10 @@ class Request:
           if mode_url in [ModeUrl.READ_QUESTION, ModeUrl.DELETE_QUESTION, ModeUrl.UPDATE_QUESTION]:
                url += '/' + id_question
                     
+                    
           elif mode_url == ModeUrl.CREATE_QUESTION:
-               url += ModeArguments.CATEGORY.value + category
+               url += '?' + ModeArguments.CATEGORY.value + category
+               
                
           elif mode_url == ModeUrl.GET_QUESTION_USER:
                if user_id:
@@ -89,8 +91,9 @@ class Request:
                elif username:
                     url += ModeArguments.GET_BY_NAME.value + username
                
+               
           elif mode_url == ModeUrl.CHANGE_CATEGORY:
-               url += ModeArguments.CATEGORY.value + category + '?id_question=' + id_question
+               url += '?id_question=' + id_question + '&' + ModeArguments.CATEGORY.value + category
                
           response = req_method(
                url=url,

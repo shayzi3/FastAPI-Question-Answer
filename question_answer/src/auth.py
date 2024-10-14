@@ -37,8 +37,8 @@ class Auth(Request):
                username=username,
                password=password,
           )
-          if 'access_token' in response.__dict__.keys():
-               self._token = response.access_token
+          if 'access_token' in response.keys():
+               self._token = response.get('access_token')
           if isinstance(response, Error):
                return response
           return Token(**response)
@@ -57,8 +57,8 @@ class Auth(Request):
                username=username,
                password=password
           )
-          if 'access_token' in response.__dict__.keys():
-               self._token = response.access_token
+          if 'access_token' in response.keys():
+               self._token = response.get('access_token')
           if isinstance(response, Error):
                return response
           return Token(**response)

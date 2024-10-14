@@ -4,3 +4,4 @@ app/alembic/versions
 app/core/.env
 app/.py
 test.py
+tst.py

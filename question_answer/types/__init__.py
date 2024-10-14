@@ -9,7 +9,8 @@ from .models import (
      Token, 
      Error, 
      ServerResponse,
-     ReadUser
+     ReadUser,
+     ReadQuestion
 )
 
 
@@ -21,5 +22,6 @@ __all__ = [
      "ServerResponse",
      "RequestMethods",
      "ReadUser",
-     "Category"
+     "Category",
+     "ReadQuestion"
 ]

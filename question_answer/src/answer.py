@@ -9,9 +9,10 @@ class Answer(AbstractCrud, Request):
      
      def __init__(self, token: str | None = None) -> None:
           if not isinstance(token, str):
-               raise TypeError("token is required argument")
+               raise ValueError("token is required argument")
           
           self.__token = token
+          super().__init__()
           
      def create(self):
           return None
