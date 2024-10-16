@@ -1,9 +1,10 @@
 import random
 
 from typing import Callable, Any
-from sqlalchemy import select, delete, update
+from sqlalchemy import select, delete, update, text
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import  AsyncSession
+from string import digits, punctuation, whitespace
 
 
 from db.schemas import (
@@ -198,6 +199,44 @@ class CrudQuestion(Session):
                )
                await db.execute(sttm)
           return ResponseModel(code=200, detail='Success changed category.')
+     
+     
+     async def questions_search(
+          self,
+          text_query: str
+     ) -> list[QuestionSchema]:
+          
+          def sorted_tuple(
+               question_id: int,
+               question: str,
+               category: str,
+               user_id: int,
+               answers: list | None = None
+          ) -> QuestionSchema:
+               
+               return QuestionSchema(
+                    question_id=question_id,
+                    question=question,
+                    category=category,
+                    user_id=user_id,
+                    answers=answers
+               )
+          
+          async with self.session() as db:
+               symbols = digits + punctuation + whitespace
+               
+               normal_text = text_query.strip(symbols).split()
+               lower_text = [txt.lower() for txt in normal_text]
+               
+               sttm_normal = text(f"SELECT * FROM questions where REGEXP_LIKE(question, '{' | '.join(normal_text)}')")
+               sttm_lower = text(f"SELECT * FROM questions where REGEXP_LIKE(question, '{' | '.join(lower_text)}')")
+               
+               response_n = await db.execute(sttm_normal)
+               response_l = await db.execute(sttm_lower)
+               result = set(response_n.all() + response_l.all())
+               
+          
+               return [sorted_tuple(*arg) for arg in result] if result else []
      
      
 crud_question = CrudQuestion()

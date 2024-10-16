@@ -58,3 +58,10 @@ async def change_category(
      change_data: Annotated[ResponseModel, Depends(forum_depend.change_category_depend)]
 ):
      return change_data
+
+
+@router_forum.get('/search', response_model=list[QuestionSchema])
+async def search_questions(
+     search_data: Annotated[list[QuestionSchema], Depends(forum_depend.search_questions_depend)]
+):
+     return search_data

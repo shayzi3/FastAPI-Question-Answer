@@ -126,6 +126,19 @@ class ForumDepends:
           return get
      
      
+     async def search_questions_depend(
+          self,
+          token: Annotated[str, Depends(oauth_scheme)],
+          question: str
+     ) -> list[QuestionSchema]:
+          await Jwt.decode_access_token(token)
+          
+          return await crud_question.questions_search(
+               text_query=question
+          )
+          
+     
+     
 forum_depend = ForumDepends()
           
           
